@@ -18,6 +18,8 @@ enum Annoy_Levels {
 	SILENT
 };
 
+Annoy_Levels annoyLevel = VERY;
+
 enum Mode {
 	READING,
 	OPENED,
@@ -28,11 +30,9 @@ enum Mode {
 struct /*{{{*/ Query {
 	uint8_t size = 18;
 	byte* data = (byte*) malloc(size);
-	Mode mode;
 } query; //}}}
 
 Mode mode = READING;
-bool open;
 
 #define TABLE_LEN       10
 #define DIGEST_LEN      20
@@ -63,22 +63,22 @@ struct /*{{{*/ Hashtable { //not a hashmap
 } /*}}}*/ hashtable;
 //bad bad bad
 bool /*{{{*/ validate(Hashtable table, byte hash[]) {
-	if (open) {
-		return Annoy_Levels::VERY;
-
-	}
+	Serial.println("validating card");
 	bool valid = false;
 	short validBytes = 0;
 
 	for (short i = 0; i < TABLE_LEN; i++) {
 		if (((2^i) & table.enabled) > 0) {
+			Serial.println("istg");
 			for (short j = 0; j < table.digestlen; j++) {
+				Serial.println("checking");
 				if (table.hash[i * table.digestlen + j] == hash[j]) {
 					validBytes++;
+					Serial.println(validBytes);
 				}
 				if (validBytes == 20) {
 					s_print("VALID");
-					valid = true;
+					valid = true; //mark
 				}
 			}
 		}
@@ -91,7 +91,9 @@ MFRC522 rfid = MFRC522(SS_PIN, RST_PIN );
 
 MFRC522::MIFARE_Key key;
 
-Annoy_Levels /*{{{*/ checkCard() {
+Mode /*{{{*/ checkCard() {
+	Serial.println("checking card");
+	Serial.print("	");
 	if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
 
 		rfid.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 0, &key, &rfid.uid);
@@ -102,17 +104,20 @@ Annoy_Levels /*{{{*/ checkCard() {
 			Serial.println();
 			byte hash[20];
 			sha1(query.data, query.size, &hash[0]);
+
 			if (validate(hashtable, &hash[0])) {
+				Serial.println("valid somehow?");
 				rfid.PCD_StopCrypto1();
-				open = true;
-				return Annoy_Levels::VERY;
+				annoyLevel = VERY;
+				return Mode::OPENED;
+
 			}
 		}
-		query.mode = READING;
 
 		rfid.PCD_StopCrypto1();
-		return Annoy_Levels::SILENT;
+		return Mode::READING;
 	}
+	return Mode::READING;
 } //}}}
 
 int prevTime = 0;
@@ -160,15 +165,16 @@ void setup() {
 void loop() {
 	switch (mode) {
 		case READING:
-			if (!open) {
-				annoy(checkCard());
-			}
+			Serial.println("READING");
+			Serial.print("	");
+			mode = checkCard();
 			break;
 		case OPENED:
-			return;
+			Serial.println("OPEN");
+			annoy(annoyLevel);
 			break;
 		case WRITING:
-			return;
+			Serial.println("LITERALLY HOW");
 			break;
 	}
 }
