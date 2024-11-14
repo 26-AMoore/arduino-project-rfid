@@ -7,7 +7,7 @@
 #define RST_PIN         5
 #define SS_PIN          53
 #define ANNOY_LED       3
-#define READER_LED      2
+#define Button_PIN      2
 #define s_print(str) (Serial.print(str))
 //}}}
 
@@ -48,7 +48,7 @@ struct /*{{{*/ Hashtable { //not a hashmap
 	unsigned short enabled = 65535; //used as a bitmap of which hashes are enabled
 	byte digestlen = 20;
 	byte hash[TABLE_LEN * DIGEST_LEN] = {
-	0x5B, 0xA9, 0x3C, 0x9D, 0xB0, 0xCF, 0xF9, 0x3F, 0x52, 0xB5, 0x21, 0xD7, 0x42, 0x0E, 0x43, 0xF6, 0xED, 0xA2, 0x78, 0x4F,
+	0x46, 0xF6, 0x3B, 0x7E, 0x97, 0x0C, 0xE0, 0x5F, 0x3D, 0xB3, 0x42, 0xE0, 0x78, 0x5E, 0x67, 0xB0, 0x7D, 0x2F, 0x8E, 0x3c,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -71,7 +71,7 @@ bool /*{{{*/ validate(Hashtable table, byte hash[]) {
 		if (((2^i) & table.enabled) > 0) {
 			Serial.println("istg");
 			for (short j = 0; j < table.digestlen; j++) {
-				Serial.println("checking");
+				//Serial.println("checking");
 				if (table.hash[i * table.digestlen + j] == hash[j]) {
 					validBytes++;
 					Serial.println(validBytes);
@@ -98,12 +98,17 @@ Mode /*{{{*/ checkCard() {
 
 		rfid.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 0, &key, &rfid.uid);
 		
-		for (int i = 0; i < 4; i++) {
-			rfid.MIFARE_Read(i, query.data, &query.size);
-			dump_byte_array(query.data, query.size);
+//		for (int i = 0; i < 4; i++) {
+			rfid.MIFARE_Read(0, query.data, &query.size);
+			//dump_byte_array(query.data, query.size);
 			Serial.println();
 			byte hash[20];
 			sha1(query.data, query.size, &hash[0]);
+			Serial.print("Hash: ");
+			dump_byte_array(hash, 20);
+			Serial.println("");
+			Serial.print("Data: ");
+			dump_byte_array(query.data, query.size);
 
 			if (validate(hashtable, &hash[0])) {
 				Serial.println("valid somehow?");
@@ -112,7 +117,7 @@ Mode /*{{{*/ checkCard() {
 				return Mode::OPENED;
 
 			}
-		}
+//		}
 
 		rfid.PCD_StopCrypto1();
 		return Mode::READING;
@@ -155,6 +160,7 @@ void setup() {
 	pinMode(ANNOY_LED, OUTPUT);
 	SPI.begin();
 	rfid.PCD_Init();
+	pinMode(Button_PIN, INPUT);
 
 	for (int i = 0; i < 6; i++) {
 		key.keyByte[i] = 0xff;
@@ -170,8 +176,10 @@ void loop() {
 			mode = checkCard();
 			break;
 		case OPENED:
-			Serial.println("OPEN");
 			annoy(annoyLevel);
+			if (digitalRead(Button_PIN) == HIGH) {
+//				mode = READING;
+			}
 			break;
 		case WRITING:
 			Serial.println("LITERALLY HOW");
