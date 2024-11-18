@@ -180,18 +180,6 @@
         "output": ".pio/build/megaatmega2560/libb0c/SHA-1 Hash/sha1/sha1.c.o"
     },
     {
-        "command": "/home/xela/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/card_utils.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60116 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc \"-I.pio/libdeps/megaatmega2560/SHA-1 Hash/src\" -I.pio/libdeps/megaatmega2560/MFRC522/src -I/home/xela/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/xela/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/xela/.platformio/packages/framework-arduino-avr/variants/mega src/card_utils.cpp",
-        "directory": "/home/xela/dev/Arduino/test_RFID",
-        "file": "src/card_utils.cpp",
-        "output": ".pio/build/megaatmega2560/src/card_utils.cpp.o"
-    },
-    {
-        "command": "/home/xela/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/hashtable.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60116 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc \"-I.pio/libdeps/megaatmega2560/SHA-1 Hash/src\" -I.pio/libdeps/megaatmega2560/MFRC522/src -I/home/xela/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/xela/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/xela/.platformio/packages/framework-arduino-avr/variants/mega src/hashtable.cpp",
-        "directory": "/home/xela/dev/Arduino/test_RFID",
-        "file": "src/hashtable.cpp",
-        "output": ".pio/build/megaatmega2560/src/hashtable.cpp.o"
-    },
-    {
         "command": "/home/xela/.platformio/packages/toolchain-atmelavr/bin/avr-g++ -o .pio/build/megaatmega2560/src/main.cpp.o -c -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -mmcu=atmega2560 -Os -Wall -ffunction-sections -fdata-sections -flto -DPLATFORMIO=60116 -DARDUINO_AVR_MEGA2560 -DF_CPU=16000000L -DARDUINO_ARCH_AVR -DARDUINO=10808 -Iinclude -Isrc \"-I.pio/libdeps/megaatmega2560/SHA-1 Hash/src\" -I.pio/libdeps/megaatmega2560/MFRC522/src -I/home/xela/.platformio/packages/framework-arduino-avr/libraries/SPI/src -I/home/xela/.platformio/packages/framework-arduino-avr/cores/arduino -I/home/xela/.platformio/packages/framework-arduino-avr/variants/mega src/main.cpp",
         "directory": "/home/xela/dev/Arduino/test_RFID",
         "file": "src/main.cpp",
