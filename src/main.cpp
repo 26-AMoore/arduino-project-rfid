@@ -1,4 +1,3 @@
-//{{{ includes and macros
 #include "HardwareSerial.h"
 #include "SPI.h"
 #include <Arduino.h>
@@ -6,12 +5,11 @@
 #include <Hash.h>
 #define RST_PIN         5
 #define SS_PIN          53
+#define READER_LED      7
 #define ANNOY_LED       3
-#define Button_PIN      2
+#define BUTTON_PIN      2
 #define s_print(str) (Serial.print(str))
-//}}}
 
-// enums {{{
 enum Annoy_Levels {
 	VERY,
 	LITTLE,
@@ -25,7 +23,6 @@ enum Mode {
 	OPENED,
 	WRITING,
 };
-//}}}
 
 struct Query {
 	uint8_t size = 18;
@@ -37,12 +34,12 @@ Mode mode = READING;
 #define TABLE_LEN       10
 #define DIGEST_LEN      20
 
-void /*{{{*/ dump_byte_array(byte *buffer, byte bufferSize) {
+void dump_byte_array(byte *buffer, byte bufferSize) {
 	for (byte i = 0; i < bufferSize; i++) {
 		s_print(buffer[i] < 0x10 ? " 0" : " ");
-		Serial.print(buffer[i], HEX);
+//		Serial.print(buffer[i], HEX);
 	}
-} //}}}
+}
 
 struct Hashtable { //not a hashmap
 	unsigned short enabled = 65535; //used as a bitmap of which hashes are enabled
@@ -63,7 +60,7 @@ struct Hashtable { //not a hashmap
 } hashtable;
 //bad bad bad
 bool validate(Hashtable table, byte hash[]) {
-	Serial.println("validating card");
+//	Serial.println("validating card");
 	bool valid = false;
 	short validBytes = 0;
 
@@ -96,6 +93,7 @@ Mode checkCard() {
 	Serial.print("	");
 	if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
 
+		digitalWrite(READER_LED, HIGH);
 		rfid.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 0, &key, &rfid.uid);
 
 		rfid.MIFARE_Read(0, query.data, &query.size);
@@ -125,7 +123,7 @@ Mode checkCard() {
 int prevTime = 0;
 int elapsedTime = 0;
 void blink(int led, int bri) {
-	elapsedTime = millis();
+	elapsedTime = millis() % 1000;
 	if (elapsedTime - prevTime > 500) {
 		analogWrite(led, 0);
 	} else {
@@ -138,7 +136,7 @@ void blink(int led, int bri) {
 }
 
 
-void /*{{{*/ annoy(Annoy_Levels annoy) {
+void annoy(Annoy_Levels annoy) {
 	switch (annoy) {
 		case VERY:
 			blink(ANNOY_LED, 255);
@@ -149,7 +147,7 @@ void /*{{{*/ annoy(Annoy_Levels annoy) {
 		case SILENT:
 			break;
 	}
-} //}}}
+}
 
 void setup() {
 	Serial.begin(9600);
@@ -157,7 +155,8 @@ void setup() {
 	pinMode(ANNOY_LED, OUTPUT);
 	SPI.begin();
 	rfid.PCD_Init();
-	pinMode(Button_PIN, OUTPUT);
+	pinMode(BUTTON_PIN, OUTPUT); // I know this is wrong, you know this is wrong, but this is the only way it works
+	pinMode(READER_LED, OUTPUT);
 
 	for (int i = 0; i < 6; i++) {
 		key.keyByte[i] = 0xff;
@@ -168,20 +167,21 @@ void setup() {
 void loop() {
 	switch (mode) {
 		case READING:
-			Serial.println("READING");
-			Serial.print("	");
+//			Serial.println("READING");
+			digitalWrite(READER_LED, HIGH);
 			mode = checkCard();
 			break;
 		case OPENED:
 			annoy(annoyLevel);
-			if (digitalRead(Button_PIN)) {
-				Serial.println("PRESSED");
+			digitalWrite(READER_LED, LOW);
+			if (digitalRead(BUTTON_PIN)) {
+//				Serial.println("PRESSED");
 				mode = READING;
 				digitalWrite(ANNOY_LED, LOW);
 			}
 			break;
 		case WRITING:
-			Serial.println("LITERALLY HOW");
+//			Serial.println("Uh oh");
 			break;
 	}
 }
